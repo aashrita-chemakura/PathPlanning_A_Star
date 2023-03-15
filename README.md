@@ -1,5 +1,5 @@
 
-# ENPM661 - Project There 
+# ENPM661 - Project Three
 ## Authors
 
 - [Suriya Suresh](https://www.github.com/theunknowninfinite)
