@@ -3,6 +3,7 @@
 ## Authors
 
 - [Suriya Suresh](https://www.github.com/theunknowninfinite)
+- [Aashrita Chemakura](https://github.com/aashrita-chemakura)
 
 ## 1. Project Goals
 
@@ -28,7 +29,7 @@ $ git clone link-of-repo
 2. Then run the command ```` $ python nameoffile,py ```` to run the script
 
 ## Notes 
-Nothing Yet....
+
 ## Support
 
 For support, open a issue on Github.
