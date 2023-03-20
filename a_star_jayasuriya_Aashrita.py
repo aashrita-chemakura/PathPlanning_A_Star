@@ -14,6 +14,7 @@ class node_object:
     def __lt__(self,other):
         return self.cost+self.cost_to_goal < other.cost+other.cost_to_goal
 
+#Getting inputs
 def get_input():
     start_coor=tuple(int(item) for item in input("\n Start Node: ").split(','))
     start_theta=int(input("Enter Start Orientation ")) 
@@ -27,6 +28,7 @@ def get_input():
     clr=int(input("Enter the Clearence:"))
     return start_coor,start_theta,end_coor,end_theta,step_size,robot_radius,clr
 
+#Generating the obstacles map
 def generate_map(clearence):
     #NEED TO UPDATE COLOR 
     canvas = np.zeros((250,600,3),dtype="uint8") 
@@ -56,3 +58,114 @@ def generate_map(clearence):
     cv2.rectangle(canvas,(100,150),(150,250-clearence),color=black,thickness=-1)
 
     return canvas
+
+#Function to check if the input is in the obstacle
+def check_if_in_obstacle(point,canvas):
+    x,y=point
+
+    if all(val == 255 for val in canvas[y][x]):
+        return True
+
+    elif all(val == 0 for val in canvas[y][x]):
+        return True    
+
+    else:
+        print("Point  Clear")
+        return False
+
+#Checking if the given input coordinates are valid
+def check_valid_points(point,clr,canvas):
+    x,y=point
+    if x<(0+clr) or x>(600-clr) or y<(0+clr) or y>(250-clr):
+        print("Point not in region")
+        valid_point=False
+        return valid_point
+
+    
+    flag_ob=check_if_in_obstacle(point,canvas)
+    if flag_ob:
+        print("Point in Obstruction in FN Check valid Point")
+        valid_point=False
+        return valid_point
+    
+    else:
+        valid_point = True
+        return valid_point
+        
+def node_id(node):
+    x,y=node.pt
+    key = 1022*x + 111*y 
+    return key
+
+#Defining actions
+def actionset(point,cost,theta,step_size,clr,canvas):
+    px,py=point
+    cost=cost
+    
+    list_of_actions=[]
+    #angle,cost
+    actions=[[theta+60,1],[theta+30,1],[theta+0,1],[theta-30,1],[theta-60,1],]
+   
+    for idx in actions:
+        x=px+np.cos(np.deg2rad(idx[0]))*step_size
+        y=py+np.sin(np.deg2rad(idx[0]))*step_size
+        cost1= cost+idx[1]
+        x=int(np.round(x,0))
+        y=int(np.round(y,0))
+        
+        if (check_valid_points((x,y),clr,canvas)==True):
+            list_of_actions.append(((x,y),idx[0],cost1))
+
+    return list_of_actions
+
+#Calculating the heuristic distance
+def euclidiean_distance(point1,point2):
+    x1,y1=point1
+    x2,y2=point2
+    distance=np.sqrt((x2-x1)**2+(y2-y1)**2)
+    return distance
+
+#A-Star algorithm
+def astar(start_node, end_node, canvas, step_size, clr):
+    start = start_node
+    end = end_node
+    goal_dist_thresh = 1.5
+    nodes_to_explore = {node_id(start): start}
+    nodes_explored = {}
+    queue_of_nodes = [(start.cost, start)]
+    all_nodes_list = []
+
+    while queue_of_nodes:
+        current_node = hq.heappop(queue_of_nodes)[1]
+        # all_nodes_list.append([current_node.pt, current_node.theta])
+        all_nodes_list.append((current_node.pt))
+        current_node_id = node_id(current_node)
+        dt = euclidiean_distance(current_node.pt, end.pt)
+        if dt < goal_dist_thresh:
+            end_node.parent_node = current_node.parent_node
+            end_node.cost=current_node.cost
+            print("GOAL REACHED")
+            return all_nodes_list, 1
+        if current_node_id in nodes_explored:
+            continue
+        else:
+            nodes_explored[current_node_id] = current_node
+        nodes_to_explore.pop(current_node_id, None)
+        
+        actions = actionset(current_node.pt, current_node.cost, current_node.theta, step_size, clr, canvas)
+        for idx in actions:
+            x, y = idx[0]
+            theta = idx[1]
+            cost = idx[2]
+            cost_to_go = euclidiean_distance((x, y), end.pt)
+            new_node = node_object((x, y), cost, current_node, theta, cost_to_go)
+            new_node_id = node_id(new_node)
+            if not check_valid_points(new_node.pt, clr, canvas) or new_node_id in nodes_explored:
+                continue
+            if new_node_id in nodes_to_explore and new_node.cost < nodes_to_explore[new_node_id].cost: 
+                nodes_to_explore[new_node_id] = new_node
+            else:
+                nodes_to_explore[new_node_id] = new_node
+            hq.heappush(queue_of_nodes, (new_node.cost + new_node.cost_to_goal, new_node))
+
+    return all_nodes_list, 0
