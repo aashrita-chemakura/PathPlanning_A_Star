@@ -27,19 +27,19 @@ The code uses the following libraries/modules:
 ```` 
 $ git clone link-of-repo
 ````
-2. Then run the command ```` $ python nameoffile,py ```` to run the script
+2. Then run the command ```` $ python a_star_jayasuriya_Aashrita.py ```` to run the script
 
 ## 4. Giving the inputs
 
-1. Enter the intial coordinates of the robot
+1. Enter the intial coordinates of the robot in the form of a tuple separated by a comma
 2. Enter the orientation of the robot at the initial point
-3. Enter the goal coordinates of the robot
+3. Enter the goal coordinates of the robot in the form of a tuple separated by a comma
 4. Enter the orientation of the robot at the goal point
 5. Enter the Step Size 
 6. Enter the radius os the robot
 7. Enter the clearance
 
-*Make sure that the clearance + radius of the robot value is not greater than 10.
+Make sure that the clearance + radius of the robot value is not greater than 10.
 
 ##5. Outputs
 The result will display the plot of path followed by the robot to reach the goal from the start point.
