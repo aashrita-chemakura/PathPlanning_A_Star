@@ -1,3 +1,10 @@
+# GITHUB LINK - https://github.com/theunknowninfinite/ENPM661_project_3
+
+# DONE BY 
+# Jayasuriya Suresh
+# Aashrita Chemakura
+
+
 import numpy as np
 import cv2
 import time 
@@ -28,34 +35,33 @@ def get_input():
     clr=int(input("Enter the Clearence:"))
     return start_coor,start_theta,end_coor,end_theta,step_size,robot_radius,clr
 
-#Generating the obstacles map
 def generate_map(clearence):
     #NEED TO UPDATE COLOR 
     canvas = np.zeros((250,600,3),dtype="uint8") 
     # canvas[:, :] = (255,255,255)
 
-    white=(255,255,255)
+    white=(0,0,255)
     black=(0,0,0)
     blue=(255,0,0)
     pts_bloated_map=[np.array([[0+clearence,0+clearence],[600-clearence,0+clearence],[600-clearence,250-clearence],[0+clearence,250-clearence]])]
-    cv2.fillPoly(canvas , pts_bloated_map, color=(5,5,5)) 
+    cv2.fillPoly(canvas , pts_bloated_map, color=(253,253,253)) 
 
     #Triangle
     pts_t = [np.array([[460,25],[510,125], [460,225]])]
-    cv2.fillPoly(canvas , pts_t, color=black) 
-    cv2.polylines(canvas,pts_t, True ,color=white,thickness=clearence)
+    cv2.fillPoly(canvas , pts_t, color=white) 
+    cv2.polylines(canvas,pts_t, True ,color=black,thickness=clearence)
 
     #Hexagon
     pts_h = [np.array([[235.04, 87.5], [235.05, 162.5], [300, 200], [364.95, 162.5], [364.95, 87.5], [300, 50], [235.04, 87.5]],np.int32)]
-    cv2.fillPoly(canvas, pts_h, color=black)
-    cv2.polylines(canvas,pts_h,True,color=white,thickness=clearence)
+    cv2.fillPoly(canvas, pts_h, color=white)
+    cv2.polylines(canvas,pts_h,True,color=black,thickness=clearence)
 
     #RECT 1 
-    cv2.rectangle(canvas,(100-clearence,0+clearence),(150+clearence,100+clearence),color=white,thickness=-1)
-    cv2.rectangle(canvas,(100,0+clearence),(150,100),color=black,thickness=-1)
+    cv2.rectangle(canvas,(100-clearence,0+clearence),(150+clearence,100+clearence),color=black,thickness=-1)
+    cv2.rectangle(canvas,(100,0+clearence),(150,100),color=white,thickness=-1)
     # #RECT 2
-    cv2.rectangle(canvas,(100-clearence,150-clearence),(150+clearence,250-clearence),color=white,thickness=-1)
-    cv2.rectangle(canvas,(100,150),(150,250-clearence),color=black,thickness=-1)
+    cv2.rectangle(canvas,(100-clearence,150-clearence),(150+clearence,250-clearence),color=black,thickness=-1)
+    cv2.rectangle(canvas,(100,150),(150,250-clearence),color=white,thickness=-1)
 
     return canvas
 
@@ -170,6 +176,7 @@ def astar(start_node, end_node, canvas, step_size, clr):
 
     return all_nodes_list, 0
 
+#doing backtracking 
 def back_tracking(goal_node):  
     path_taken = []
     path_taken.append(goal_node.pt)
@@ -183,4 +190,64 @@ def back_tracking(goal_node):
     path_taken = np.asarray(path_taken)
 
     return path_taken
+
+#plotting Points 
+def alt_plot_fn(canvas,all_nodes_list,backtrack_nodes):
+    color_path=(0,255,0)
+    counter=0
+    color_nodes=(255,0,0)
+    # print(canvas.shape)
+    height= canvas.shape[0]
+    for i in all_nodes_list:
+                x,y=i
+                cv2.circle(canvas,(x,height-y),1,color_nodes,1)
+                counter += 1
+                if counter == 100:
+                    counter = 0
+                    cv2.imshow('Path', canvas)
+                    cv2.waitKey(1)
+    print("Backtracking Nodes")
+    for i in backtrack_nodes:
+                canvas[height- i[1],i[0]]= color_path
+                counter += 1
+                # print(y,x)
+                if counter == 10:
+                    counter = 0
+                    cv2.imshow('Path', canvas)
+                    cv2.waitKey(1)
+
+    cv2.imshow('Path', canvas)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+
+#calling all functions to get input , check inputs and plot the final results 
+start_coor,start_theta,end_coor,end_theta,step_size,robot_radius,clearence=get_input()
+start_time=time.time()
+img=generate_map(robot_radius+clearence)
+
+#checking points
+if not check_valid_points(start_coor,clearence+robot_radius,img):
+    print("Wrong Start Node ,Please run program again and enter proper value")
+    exit()
+if not check_valid_points(end_coor,clearence+robot_radius,img):
+    print("Wrong End Node, Please run program again and enter proper value")
+    exit()
+if end_coor == start_coor:
+    print ("Start and End are the Same Exiting.PLease run program again")
+    exit()
+start = node_object(start_coor, 0, None, start_theta, 0)
+end = node_object(end_coor, 0, None, end_theta, 0)
+
+list_of_nodes, flag = astar(start, end, img, step_size, clearence+robot_radius)
+end_time=time.time()-start_time
+print("Code Took", end_time,"Seconds")
+
+#plotting
+if flag == 1:
+    path_taken = back_tracking(end)
+    alt_plot_fn(img,list_of_nodes,path_taken)
+else:
+    print("Path could not be found")
 
