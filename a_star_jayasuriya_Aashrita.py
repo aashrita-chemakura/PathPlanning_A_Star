@@ -198,9 +198,13 @@ def alt_plot_fn(canvas,all_nodes_list,backtrack_nodes):
     color_nodes=(255,0,0)
     # print(canvas.shape)
     height= canvas.shape[0]
+    cv2.imshow('Map', canvas)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     for i in all_nodes_list:
                 x,y=i
                 cv2.circle(canvas,(x,height-y),1,color_nodes,1)
+                canvas[height-y][x]=color_nodes
                 counter += 1
                 if counter == 100:
                     counter = 0
