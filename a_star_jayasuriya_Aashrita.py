@@ -169,3 +169,18 @@ def astar(start_node, end_node, canvas, step_size, clr):
             hq.heappush(queue_of_nodes, (new_node.cost + new_node.cost_to_goal, new_node))
 
     return all_nodes_list, 0
+
+def back_tracking(goal_node):  
+    path_taken = []
+    path_taken.append(goal_node.pt)
+    parent_n = goal_node.parent_node
+
+    while parent_n != None:
+        path_taken.append(parent_n.pt)
+        parent_n = parent_n.parent_node
+        
+    path_taken.reverse()
+    path_taken = np.asarray(path_taken)
+
+    return path_taken
+
